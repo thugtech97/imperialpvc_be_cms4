@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PublicPageController;
+use App\Http\Controllers\Api\WebsiteSettingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -425,3 +426,5 @@ Route::get('/show-viewer',[
 Route::get('/public/pages/{slug}', [PublicPageController::class, 'show']);
 Route::get('/public/menus/active', [PublicPageController::class, 'active']);
 Route::get('/public/footer', [PublicPageController::class, 'footer']);
+
+Route::get('/website-settings', [WebsiteSettingController::class, 'show']);

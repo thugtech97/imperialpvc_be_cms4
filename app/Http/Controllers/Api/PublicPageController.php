@@ -109,7 +109,6 @@ class PublicPageController extends Controller
     private function normalizeItems(array $items, $pages = null): array
     {
         return collect($items)->map(function ($item) use ($pages) {
-            // Resolve target URL
             $target = $item['target'] ?? '';
             if (empty($target) && !empty($item['page_id']) && $pages) {
                 $page = $pages->get($item['page_id']);
@@ -117,8 +116,8 @@ class PublicPageController extends Controller
             }
 
             return [
-                'id'       => $item['id'],
-                'label'    => $item['label'],
+                'id'       => $item['id'] ?? $item['page_id'] ?? null,  // ← fallback
+                'label'    => $item['label'] ?? '',
                 'type'     => $item['type'] ?? 'page',
                 'target'   => $target,
                 'children' => $this->normalizeItems($item['children'] ?? [], $pages),
