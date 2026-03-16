@@ -1,6 +1,6 @@
 <ul class="nav nav-aside">
     <li class="nav-item">
-        <a href="{{route('home')}}" target="_blank" class="nav-link">
+        <a href="{{ env('FRONTEND_URL') . '/public/home' }}" target="_blank" class="nav-link">
             <i data-feather="external-link"></i>
             <span>View Website</span>
         </a>

@@ -20,7 +20,7 @@
                 <h4 class="mg-b-0 tx-spacing--1">Welcome, {{ Auth::user()->firstname }}!</h4>
             </div>
             <div class="d-none d-md-block">
-                <a href="{{ env('APP_URL') }}" target="_blank" class="btn btn-sm pd-x-15 btn-white btn-uppercase">
+                <a href="{{ env('FRONTEND_URL') . '/public/home' }}" target="_blank" class="btn btn-sm pd-x-15 btn-white btn-uppercase">
                     <i data-feather="arrow-up-right" class="wd-10 mg-r-5"></i> View Website
                 </a>
             </div>
