@@ -2,7 +2,7 @@
 <html dir="ltr" lang="en-US">
 
 
-@include('theme.layouts.components.styles')
+@include('theme.layouts.components.styles2')
 
 
  <body class="stretched is-expanded-menu">

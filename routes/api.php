@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PublicPageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -421,3 +422,6 @@ Route::get('/show-viewer',[
 ]);
 
 
+Route::get('/public/pages/{slug}', [PublicPageController::class, 'show']);
+Route::get('/public/menus/active', [PublicPageController::class, 'active']);
+Route::get('/public/footer', [PublicPageController::class, 'footer']);
