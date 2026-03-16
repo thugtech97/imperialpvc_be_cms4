@@ -54,7 +54,7 @@ class PublicPageController extends Controller
                         'title'       => $banner->title,
                         'description' => $banner->description,
                         'alt'         => $banner->alt,
-                        'image_url'   => url(Storage::url($banner->image_path)),
+                        'image_url'   => $banner->image_path,
                         'button_text' => $banner->button_text,
                         'url'         => $banner->url,
                         'order'       => $banner->order,
