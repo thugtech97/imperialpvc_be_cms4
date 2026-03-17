@@ -1,28 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\{PageModalController, FacebookDataDeletionController, GoogleDataDeletionController, FacebookController, ResourceCategoryController, ResourceController};
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\SocialiteController;
-
-// CMS Controllers
-use App\Http\Controllers\{FileDownloadCategoryController, FileDownloadController, MemberController, PageModalController, SitemapController, FacebookDataDeletionController, GoogleDataDeletionController, FacebookController, QrCodeController, ResourceCategoryController, ResourceController};
-
-use App\Http\Controllers\Cms4Controllers\{
-    ArticleCategoryController, ArticleFrontController, ArticleController, AlbumController, MobileAlbumController, PageController, MenuController, FileManagerController
-};
-
-// Settings
-use App\Http\Controllers\Settings\{
-    PermissionController, AccountController, AccessController, UserController, LogsController, RoleController, WebController
-};
-
-// Ecommerce Controller
-use App\Http\Controllers\Ecommerce\{
-    CustomerController, CustomerFrontController, ProductCategoryController, ProductController, ProductFrontController, InventoryReceiverHeaderController, PromoController, DeliverablecitiesController, CouponController, CouponFrontController, CartController, MyAccountController, SalesController, ReportsController, BrandController, FormAttributeController, ProductReviewController, CustomerFavoriteController, CustomerWishlistController, BannerAdController, ProductCatalogHeaderController
-};
-
-use App\Http\Controllers\MailingList\{SubscriberController, GroupController, CampaignController, SubscriberFrontController};
+use App\Http\Controllers\Cms4Controllers\{ ArticleCategoryController, ArticleFrontController, ArticleController, AlbumController, MobileAlbumController, PageController, MenuController, FileManagerController };
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Ecommerce\{ CustomerFrontController, ProductFrontController, CartController};
+use App\Http\Controllers\FrontController;
+use App\Http\Controllers\MailingList\{SubscriberFrontController};
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Settings\{ PermissionController, AccountController, AccessController, UserController, LogsController, RoleController, WebController };
+use App\Http\Controllers\TestimonialController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 
 
@@ -300,6 +292,18 @@ Route::group(['prefix' => 'admin-panel'], function (){
                 Route::post('modals-multiple-change-status',[PageModalController::class, 'multiple_change_status'])->name('modals.multiple.change.status');
                 Route::post('modals-multiple-delete',[PageModalController::class, 'multiple_delete'])->name('modals.multiple.delete');
         ###### Ecommerce Routes ######
+
+        Route::resource('product-categories', ProductCategoryController::class);
+        Route::post('product-categories/{id}/restore', [ProductCategoryController::class, 'restore'])
+            ->name('product-categories.restore');
+        
+        // Products
+        Route::resource('products', ProductController::class);
+        Route::post('products/{id}/restore', [ProductController::class, 'restore'])
+            ->name('products.restore');
+        
+        // Testimonials
+        Route::resource('testimonials', TestimonialController::class);
     });
 });
 

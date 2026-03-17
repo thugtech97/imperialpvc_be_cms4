@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\PublicPageController;
 use App\Http\Controllers\Api\WebsiteSettingController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TestimonialController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -428,3 +431,28 @@ Route::get('/public/menus/active', [PublicPageController::class, 'active']);
 Route::get('/public/footer', [PublicPageController::class, 'footer']);
 
 Route::get('/website-settings', [WebsiteSettingController::class, 'show']);
+
+Route::get('/products', [ProductController::class, 'showProducts']);
+Route::get('/products/{product}', [ProductController::class, 'showProduct']);
+Route::get('/public-products', [ProductController::class, 'fetch_products']);
+Route::get('/public-product-categories', [ProductCategoryController::class, 'fetch_categories']);
+
+Route::get('/testimonials', [TestimonialController::class, 'fetch_testimonials']);
+
+/*
+Route::get('/search', [SearchController::class, 'quickSearch']);
+Route::get('/public/search', [SearchController::class, 'quickSearch']);
+
+Route::get('/search/pages', [SearchController::class, 'searchPages']);
+Route::get('/search/global', [SearchController::class, 'globalSearch']);
+Route::get('/search/quick', [SearchController::class, 'quickSearch']);
+*/
+
+Route::prefix('public-articles')->group(function () {
+    Route::get('/', [PublicPageController::class, 'public_articles']);
+    Route::get('/{slug}', [PublicPageController::class, 'public_articles_show']);
+});
+Route::get('/public-article-categories', [PublicPageController::class, 'public_article_categories']);
+Route::get('/public-articles-archive', [PublicPageController::class, 'archive']);
+
+Route::post('/contact', [PublicPageController::class, 'send']);

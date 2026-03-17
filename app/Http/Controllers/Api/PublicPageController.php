@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ContactMessageMail;
+//use App\Mail\ContactMessageMail;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Menu;
@@ -149,7 +149,7 @@ class PublicPageController extends Controller
     public function public_articles(Request $request)
     {
         $query = Article::query()
-            ->with(['category:id,name,slug', 'user:id,fname,lname'])
+            ->with(['category:id,name,slug', 'user:id,firstname,lastname'])
             ->where('status', 'published')
             ->orderBy('date', 'desc');
 
@@ -188,7 +188,7 @@ class PublicPageController extends Controller
 
     public function public_articles_show(string $slug)
     {
-        $article = Article::with(['category:id,name,slug', 'user:id,fname,lname'])
+        $article = Article::with(['category:id,name,slug', 'user:id,firstname,lastname'])
             ->where('slug', $slug)
             ->where('status', 'published')
             ->firstOrFail();
@@ -232,7 +232,7 @@ class PublicPageController extends Controller
 
         return response()->json($archive);
     }
-
+    /*
     public function send(Request $request)
     {
         $data = $request->validate([
@@ -251,4 +251,5 @@ class PublicPageController extends Controller
             'message' => 'Message sent successfully'
         ]);
     }
+    */
 }

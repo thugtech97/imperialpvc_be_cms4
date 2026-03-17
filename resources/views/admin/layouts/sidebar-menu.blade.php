@@ -18,7 +18,6 @@
                 @if(auth()->user()->has_access_to_route('pages.create'))
                 <li @if (\Route::current()->getName() == 'pages.create') class="active" @endif><a href="{{ route('pages.create') }}">Create a Page</a></li>
                 @endif
-
             </ul>
         </li>
     @endif
@@ -64,6 +63,7 @@
             </ul>
         </li>
     @endif
+
     @if (auth()->user()->has_access_to_news_module() || auth()->user()->has_access_to_news_categories_module() || auth()->user()->role_id == '8')
         <li class="nav-item with-sub @if (request()->routeIs('news*') || request()->routeIs('news-categories*')) active show @endif">
             <a href="" class="nav-link"><i data-feather="edit"></i> <span>News</span></a>
@@ -79,6 +79,24 @@
             </ul>
         </li> 
     @endif
+
+    <li class="nav-item with-sub @if (request()->routeIs('products*') || request()->routeIs('product-categories*')) active show @endif">
+        <a href="" class="nav-link"><i data-feather="shopping-bag"></i> <span>Products</span></a>
+        <ul>
+            <li @if (\Route::current()->getName() == 'products.index' || \Route::current()->getName() == 'products.edit') class="active" @endif><a href="{{ route('products.index') }}">Manage Products</a></li>
+            <li @if (\Route::current()->getName() == 'products.create') class="active" @endif><a href="{{ route('products.create') }}">Create a Product</a></li>
+            <li @if (\Route::current()->getName() == 'product-categories.index' || \Route::current()->getName() == 'product-categories.edit') class="active" @endif><a href="{{ route('product-categories.index') }}">Manage Categories</a></li>
+            <li @if (\Route::current()->getName() == 'product-categories.create') class="active" @endif><a href="{{ route('product-categories.create') }}">Create a Category</a></li>
+        </ul>
+    </li>
+
+    <li class="nav-item with-sub @if (request()->routeIs('testimonials*')) active show @endif">
+        <a href="" class="nav-link"><i data-feather="message-square"></i> <span>Testimonials</span></a>
+        <ul>
+            <li @if (\Route::current()->getName() == 'testimonials.index' || \Route::current()->getName() == 'testimonials.edit') class="active" @endif><a href="{{ route('testimonials.index') }}">Manage Testimonials</a></li>
+            <li @if (\Route::current()->getName() == 'testimonials.create') class="active" @endif><a href="{{ route('testimonials.create') }}">Add a Testimonial</a></li>
+        </ul>
+    </li>
 
     @if (auth()->user()->is_an_admin() || auth()->user()->has_access_to('settings'))
         <li class="nav-item with-sub @if (request()->routeIs('account*') || request()->routeIs('website-settings*') || request()->routeIs('audit*')) active show @endif">
@@ -96,6 +114,7 @@
             </ul>
         </li>
     @endif
+
     @if (auth()->user()->is_an_admin() || auth()->user()->has_access_to('users') || auth()->user()->role_id == '10')
         <li class="nav-item with-sub @if (request()->routeIs('users*')) active show @endif">
             <a href="" class="nav-link"><i data-feather="users"></i> <span>Users</span></a>
@@ -105,6 +124,7 @@
             </ul>
         </li>
     @endif
+
     @if (auth()->user()->is_an_admin())
         <li class="nav-item with-sub @if (request()->routeIs('role*') || request()->routeIs('access*') || request()->routeIs('permission*')) active show @endif">
             <a href="" class="nav-link"><i data-feather="user"></i> <span>Account Management</span></a>
