@@ -44,13 +44,14 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-group">
+                        <div class="form-group d-none">
                             <label class="d-block">Price *</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"></span>
                                 </div>
-                                <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" required>
+                                <!-- <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" required> -->
+                                <input type="number" name="price" id="price" value="1" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" required>
                             </div>
                             @error('price')
                                 <span class="text-danger">{{ $message }}</span>
@@ -70,8 +71,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="d-block">Category</label>
-                            <select name="category_id" class="selectpicker mg-b-5 @error('category_id') is-invalid @enderror" data-style="btn btn-outline-light btn-md btn-block tx-left" title="Select category" data-width="100%">
+                            <label class="d-block">Brands</label>
+                            <select name="category_id" class="selectpicker mg-b-5 @error('category_id') is-invalid @enderror" data-style="btn btn-outline-light btn-md btn-block tx-left" title="Select brand" data-width="100%">
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                                 @endforeach
