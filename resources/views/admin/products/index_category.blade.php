@@ -15,10 +15,10 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-style1 mg-b-5">
                         <li class="breadcrumb-item" aria-current="page">CMS</li>
-                        <li class="breadcrumb-item active" aria-current="page">Product Categories</li>
+                        <li class="breadcrumb-item active" aria-current="page">Product Brands</li>
                     </ol>
                 </nav>
-                <h4 class="mg-b-0 tx-spacing--1">Manage Product Categories</h4>
+                <h4 class="mg-b-0 tx-spacing--1">Manage Product Brands</h4>
             </div>
         </div>
 
@@ -82,7 +82,7 @@
                             </form>
                         </div>
                         <div class="mg-t-10">
-                            <a class="btn btn-primary btn-sm" href="{{ route('product-categories.create') }}">Create Category</a>
+                            <a class="btn btn-primary btn-sm" href="{{ route('product-categories.create') }}">Create Brand</a>
                         </div>
                     </div>
                 </div>

@@ -12,10 +12,10 @@
                 <ol class="breadcrumb breadcrumb-style1 mg-b-10">
                     <li class="breadcrumb-item" aria-current="page"><a href="{{ route('dashboard') }}">CMS</a></li>
                     <li class="breadcrumb-item" aria-current="page"><a href="{{ route('product-categories.index') }}">Product Categories</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Create Category</li>
+                    <li class="breadcrumb-item active" aria-current="page">Create Brand</li>
                 </ol>
             </nav>
-            <h4 class="mg-b-0 tx-spacing--1">Create a Product Category</h4>
+            <h4 class="mg-b-0 tx-spacing--1">Create a Product Brand</h4>
         </div>
     </div>
 
@@ -45,7 +45,7 @@
                     @enderror
                 </div>
 
-                <button class="btn btn-primary btn-sm btn-uppercase" type="submit">Create Category</button>
+                <button class="btn btn-primary btn-sm btn-uppercase" type="submit">Create Brand</button>
                 <a class="btn btn-outline-secondary btn-sm btn-uppercase" href="{{ route('product-categories.index') }}">Cancel</a>
             </form>
         </div>

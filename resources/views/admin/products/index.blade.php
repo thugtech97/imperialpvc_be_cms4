@@ -112,8 +112,8 @@
                                 <tr>
                                     <th scope="col">Image</th>
                                     <th scope="col" width="25%">Name</th>
-                                    <th scope="col">Category</th>
-                                    <th scope="col">Price</th>
+                                    <th scope="col">Brand</th>
+                                    <!-- <th scope="col">Price</th> -->
                                     <th scope="col">Status</th>
                                     <th scope="col">Options</th>
                                 </tr>
@@ -143,7 +143,7 @@
                                                 <span class="tx-gray-400">—</span>
                                             @endif
                                         </td>
-                                        <td>{{ number_format($product->price, 2) }}</td>
+                                        <!-- <td>{{ number_format($product->price, 2) }}</td> -->
                                         <td>
                                             @if($product->status == 'active')
                                                 <span class="badge badge-success">Active</span>
