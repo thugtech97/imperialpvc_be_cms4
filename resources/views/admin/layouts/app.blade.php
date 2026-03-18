@@ -53,7 +53,7 @@
     </div>
 
     <!-- Success -->
-    <div class="pos-fixed b-10 r-10">
+    <div class="pos-fixed b-10 r-10" style="z-index: 999">
         <div id="toast_success" class="toast bg-success bd-0 wd-350" data-delay="3000" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header bg-success">
                 <h6 class="tx-white tx-14 mg-b-0 mg-r-auto tx-semibold"><i data-feather="check-circle" width="14"></i> Success</h6>
