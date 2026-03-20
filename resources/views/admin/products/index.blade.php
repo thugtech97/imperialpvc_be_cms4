@@ -152,7 +152,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <nav class="nav table-options justify-content-end flex-nowrap">
+                                            <nav class="nav table-options justify-content-start flex-nowrap">
                                                 @if(!$product->deleted_at)
                                                     <a class="nav-link" href="{{ route('products.edit', $product->id) }}" title="Edit Product">
                                                         <i data-feather="edit"></i>
