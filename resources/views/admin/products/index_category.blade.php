@@ -115,7 +115,7 @@
                                         <td><span class="badge badge-secondary">{{ $category->products_count }}</span></td>
                                         <td>{{ $category->created_at->format('d M Y') }}</td>
                                         <td>
-                                            <nav class="nav table-options justify-content-end flex-nowrap">
+                                            <nav class="nav table-options justify-content-start flex-nowrap">
                                                 @if(!$category->deleted_at)
                                                     <a class="nav-link" href="{{ route('product-categories.edit', $category->id) }}" title="Edit Category">
                                                         <i data-feather="edit"></i>

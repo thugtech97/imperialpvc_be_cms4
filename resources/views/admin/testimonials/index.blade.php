@@ -117,7 +117,7 @@
                                             <span class="tx-12 tx-gray-600">{{ Str::limit($testimonial->testimony, 100) }}</span>
                                         </td>
                                         <td>
-                                            <nav class="nav table-options justify-content-end flex-nowrap">
+                                            <nav class="nav table-options justify-content-start flex-nowrap">
                                                 <a class="nav-link" href="{{ route('testimonials.edit', $testimonial->id) }}" title="Edit Testimonial">
                                                     <i data-feather="edit"></i>
                                                 </a>
