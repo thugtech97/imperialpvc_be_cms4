@@ -121,7 +121,7 @@
                                                 <a class="nav-link" href="{{ route('testimonials.edit', $testimonial->id) }}" title="Edit Testimonial">
                                                     <i data-feather="edit"></i>
                                                 </a>
-                                                <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this testimonial?')">
+                                                <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" style="display:inline; transform: translate(0px, -2px);" onsubmit="return confirm('Delete this testimonial?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="nav-link btn btn-link" title="Delete Testimonial" style="padding: 0.25rem 0.5rem;">

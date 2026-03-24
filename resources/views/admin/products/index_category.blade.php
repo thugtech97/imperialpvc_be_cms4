@@ -120,7 +120,7 @@
                                                     <a class="nav-link" href="{{ route('product-categories.edit', $category->id) }}" title="Edit Category">
                                                         <i data-feather="edit"></i>
                                                     </a>
-                                                    <form action="{{ route('product-categories.destroy', $category->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this category?')">
+                                                    <form action="{{ route('product-categories.destroy', $category->id) }}" method="POST" style="display:inline; transform: translate(0px, -2px);" onsubmit="return confirm('Delete this category?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="nav-link btn btn-link" title="Delete Category" style="padding: 0.25rem 0.5rem;">

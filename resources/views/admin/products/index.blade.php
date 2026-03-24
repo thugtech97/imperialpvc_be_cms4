@@ -152,12 +152,12 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <nav class="nav table-options justify-content-start flex-nowrap">
+                                            <nav class="nav table-options justify-content-start align-items-center flex-nowrap">
                                                 @if(!$product->deleted_at)
                                                     <a class="nav-link" href="{{ route('products.edit', $product->id) }}" title="Edit Product">
                                                         <i data-feather="edit"></i>
                                                     </a>
-                                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this product?')">
+                                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline; transform: translate(0px, 2px);" onsubmit="return confirm('Delete this product?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="nav-link btn btn-link" title="Delete Product" style="padding: 0.25rem 0.5rem;">
