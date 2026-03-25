@@ -123,7 +123,7 @@
                                                     <form action="{{ route('product-categories.destroy', $category->id) }}" method="POST" style="display:inline; transform: translate(0px, -2px);" onsubmit="return confirm('Delete this category?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="nav-link btn btn-link" title="Delete Category" style="padding: 0.25rem 0.5rem;">
+                                                        <button type="submit" class="nav-link btn btn-link d-flex flex-row align-items-center justify-content-center" title="Delete Category" style="padding: 0.25rem 0.5rem;">
                                                             <i data-feather="trash-2"></i>
                                                         </button>
                                                     </form>

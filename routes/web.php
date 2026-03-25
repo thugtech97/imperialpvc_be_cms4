@@ -41,7 +41,7 @@ Route::get('/phpinfo', function () {
 */
 
 // CMS4 Front Pages
-    Route::get('/', [FrontController::class, 'home'])->name('home');
+    Route::get('/home', [FrontController::class, 'home'])->name('home');
     Route::get('/privacy-policy/', [FrontController::class, 'privacy_policy'])->name('privacy-policy');
     Route::post('/contact-us', [FrontController::class, 'contact_us'])->name('contact-us');
 
@@ -130,6 +130,7 @@ Route::get('/phpinfo', function () {
 
 // ADMIN ROUTES
 Route::get('/admin-panel', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         
 Route::group(['prefix' => 'admin-panel'], function (){
     Route::get('/', [LoginController::class, 'showLoginForm'])->name('panel.login');
