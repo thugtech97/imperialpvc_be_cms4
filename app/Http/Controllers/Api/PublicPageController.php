@@ -31,6 +31,8 @@ class PublicPageController extends Controller
             'label'     => $page->label,
             'slug'      => $page->slug,
             'content'   => $page->contents,
+            'json'      => $page->json,
+            'styles'    => $page->styles,
             'page_type' => $page->page_type,
             'template'  => $page->template,
             'image_url' => $page->image_url,
