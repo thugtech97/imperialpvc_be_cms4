@@ -60,7 +60,7 @@ class Permission extends Model
     {
         return [
             'page' => 'Pages',
-            'banner' => 'Desktop Banners',
+            'banner' => 'Banners',
             'file_manager' => 'Files',
             'menu' => 'Menu',
             'news' => 'News',
@@ -68,11 +68,12 @@ class Permission extends Model
             'website_settings' => 'Website Settings',
             'audit_logs' => 'Audit Trail',
             'user' => 'Users',
-            'customers' => 'Customers',
-            'sales_transaction' => 'Sales Transaction',
+            //'customers' => 'Customers',
+            //'sales_transaction' => 'Sales Transaction',
             'products' => 'Products',
-            'product_categories' => 'Product Categories',
-            'product_catalog' => 'Product Catalog',
+            //'product_categories' => 'Product Categories',
+            //'product_catalog' => 'Product Catalog',
+            /*
             'rankings' => 'Rankings',
             'inventory' => 'Inventory',
             'promos' => 'Promos',
@@ -84,6 +85,7 @@ class Permission extends Model
             'mobile_banner' => 'Mobile Banners',
             'page_modals' => 'Page Modals',
             'reports' => 'Reports',
+            */
         ];
     }
 
