@@ -155,7 +155,7 @@ Manage News
                                         <td style="overflow: hidden;" title="{{$new->name}}">
                                             <strong @if($new->trashed()) style="text-decoration:line-through;" @endif> {{$new->name}}</strong>
                                             <p class="mg-b-0 tx-gray-500 tx-11">
-                                               <a target="_blank" href="https://imperialpvc-frontend.vercel.app/public/news/{{$new->slug}}">https://imperialpvc-frontend.vercel.app/public/news/{{$new->slug}}</a>
+                                               <a target="_blank" href="{{ env('FRONTEND_URL') }}/public/news/{{$new->slug}}">{{ env('FRONTEND_URL') }}/public/news/{{$new->slug}}</a>
                                             </p>
                                         </td>
                                         <td>
@@ -174,7 +174,7 @@ Manage News
                                                 @endif
                                             @else
                                                 <nav class="nav table-options justify-content-end flex-nowrap">
-                                                    <a class="nav-link" target="_blank" href="https://imperialpvc-frontend.vercel.app/public/news/{{$new->slug}}" title="View News"><i data-feather="eye"></i></a>
+                                                    <a class="nav-link" target="_blank" href="{{ env('FRONTEND_URL') }}/public/news/{{$new->slug}}" title="View News"><i data-feather="eye"></i></a>
 
                                                     @if(auth()->user()->has_access_to_route('news.edit'))
                                                         <a class="nav-link" href="{{ route('news.edit', $new->id) }}" title="Edit News"><i data-feather="edit"></i></a>
