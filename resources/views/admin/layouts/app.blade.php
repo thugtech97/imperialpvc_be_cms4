@@ -12,7 +12,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ Setting::info()->company_name }}</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage').'/icons/'.Setting::getFaviconLogo()->website_favicon }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ \App\Helpers\Setting::resolve_favicon_url() ?? asset('storage').'/icons/'.Setting::getFaviconLogo()->website_favicon }}">
 
     <!-- vendor css -->
     <link href="{{ asset('lib/@fortawesome/fontawesome-free/css/all.min.css') }}" rel="stylesheet">

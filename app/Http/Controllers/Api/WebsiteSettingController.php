@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Setting;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class WebsiteSettingController extends Controller
 {
@@ -21,55 +23,78 @@ class WebsiteSettingController extends Controller
             'setting' => $this->setting(),
         ]);
     }
+
     /* =========================
        WEBSITE TAB
     ========================= */
-    /*
     public function updateWebsite(Request $request)
     {
         $request->validate([
             'company_name' => 'required|string|max:150',
             'website_name' => 'required|string|max:150',
             'copyright' => 'required|string|max:150',
-            'company_logo' => 'nullable|image',
-            'website_favicon' => 'nullable|image',
+            'company_logo' => 'nullable|string|max:2000',
+            'website_favicon' => 'nullable|string|max:2000',
+            'google_analytics' => 'nullable|string',
+            'google_map' => 'nullable|string',
+            'google_recaptcha_sitekey' => 'nullable|string',
         ]);
 
         $setting = $this->setting();
 
-        if ($request->hasFile('company_logo')) {
-            if ($setting->company_logo) {
-                Storage::disk('public')->delete($setting->company_logo);
-            }
-            $setting->company_logo = $request->file('company_logo')
-                ->store('logos', 'public');
-        }
-
-        if ($request->hasFile('website_favicon')) {
-            if ($setting->website_favicon) {
-                Storage::disk('public')->delete($setting->website_favicon);
-            }
-            $setting->website_favicon = $request->file('website_favicon')
-                ->store('icons', 'public');
-        }
-
-        $setting->update($request->only([
+        $data = $request->only([
             'company_name',
             'website_name',
             'copyright',
             'google_analytics',
             'google_map',
             'google_recaptcha_sitekey',
-        ]));
+        ]);
 
-        return response()->json(['message' => 'Website settings updated']);
+        if ($request->has('company_logo')) {
+            $data['company_logo'] = trim((string) $request->input('company_logo'));
+        }
+
+        if ($request->has('website_favicon')) {
+            $data['website_favicon'] = trim((string) $request->input('website_favicon'));
+        }
+
+        if ($request->hasFile('company_logo')) {
+            if ($setting->company_logo && ! $this->isManagedFilePath($setting->company_logo)) {
+                Storage::disk('public')->delete($setting->company_logo);
+            }
+            $data['company_logo'] = $request->file('company_logo')->store('logos', 'public');
+        }
+
+        if ($request->hasFile('website_favicon')) {
+            if ($setting->website_favicon && ! $this->isManagedFilePath($setting->website_favicon)) {
+                Storage::disk('public')->delete($setting->website_favicon);
+            }
+            $data['website_favicon'] = $request->file('website_favicon')->store('icons', 'public');
+        }
+
+        $setting->update($data);
+
+        return response()->json([
+            'message' => 'Website settings updated',
+            'setting' => $setting->fresh(),
+        ]);
     }
-    */
+
+    private function isManagedFilePath(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        return str_contains($path, 'file-manager')
+            || str_starts_with($path, 'http://')
+            || str_starts_with($path, 'https://');
+    }
 
     /* =========================
        CONTACT TAB
     ========================= */
-    /*
     public function updateContact(Request $request)
     {
         $request->validate([
@@ -89,12 +114,10 @@ class WebsiteSettingController extends Controller
 
         return response()->json(['message' => 'Contact settings updated']);
     }
-    */
 
     /* =========================
        DATA PRIVACY TAB
     ========================= */
-    /*
     public function updatePrivacy(Request $request)
     {
         $request->validate([
@@ -111,41 +134,4 @@ class WebsiteSettingController extends Controller
 
         return response()->json(['message' => 'Data privacy updated']);
     }
-    */
-
-    /* =========================
-       SOCIAL MEDIA
-    ========================= */
-    /*
-    public function getSocials(Request $request)
-    {
-        return SocialMediaAccount::where('user_id', $request->user()->id)->get();
-    }
-    */
-
-    /*
-    public function updateSocials(Request $request)
-    {
-        $request->validate([
-            'socials' => 'array',
-            'socials.*.name' => 'required',
-            'socials.*.media_account' => 'required',
-        ]);
-
-        $userId = $request->user()->id;
-        SocialMediaAccount::where('user_id', $userId)->delete();
-
-        foreach ($request->socials as $social) {
-            SocialMediaAccount::create([
-                'name' => $social['name'],
-                'media_account' => $social['media_account'],
-                'user_id' => $userId,
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Social media accounts updated successfully',
-        ]);
-    }
-    */
 }

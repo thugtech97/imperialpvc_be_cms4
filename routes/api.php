@@ -431,6 +431,9 @@ Route::get('/public/menus/active', [PublicPageController::class, 'active']);
 Route::get('/public/footer', [PublicPageController::class, 'footer']);
 
 Route::get('/website-settings', [WebsiteSettingController::class, 'show']);
+Route::post('/website-settings/website', [WebsiteSettingController::class, 'updateWebsite']);
+Route::post('/website-settings/contact', [WebsiteSettingController::class, 'updateContact']);
+Route::post('/website-settings/privacy', [WebsiteSettingController::class, 'updatePrivacy']);
 
 Route::get('/products', [ProductController::class, 'showProducts']);
 Route::get('/products/{product}', [ProductController::class, 'showProduct']);

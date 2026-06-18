@@ -8,7 +8,7 @@
         @if(Auth::user()->avatar == '')
             <div class="avatar avatar-sm"><img src="{{ asset('images/user.png') }}" class="rounded-circle" alt=""></div>
         @else
-            <div class="avatar avatar-sm"><img src="/{{ Auth::user()->avatar }}" class="rounded-circle" alt=""></div>
+            <div class="avatar avatar-sm"><img src="{{ \App\Helpers\Setting::resolve_user_avatar_url(Auth::user()->avatar) ?? asset(Auth::user()->avatar) }}" class="rounded-circle" alt=""></div>
         @endif
     </a>
     <!-- dropdown-link -->

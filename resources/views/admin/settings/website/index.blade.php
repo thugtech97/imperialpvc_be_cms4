@@ -77,8 +77,10 @@
 
                                 <div class="form-group {{ $errors->has('company_logo') ? 'has-error' : '' }}">
                                     <label class="d-block">Logo</label>
+                                    <input type="hidden" name="company_logo" id="company_logo_input" value="{{ old('company_logo', $web->company_logo) }}">
+                                    <a id="lfm-logo" data-input="company_logo_input" data-preview="img_temp" style="display:none;" href="javascript:void(0)"></a>
                                     <div class="custom-file">
-                                        <input type="file" class="form-control" id="company_logo" name="company_logo">
+                                        <input type="file" class="form-control" id="company_logo">
                                         <span class="text-danger tx-12">{{ $errors->first('company_logo') }}</span>
                                     </div>
                                     <p class="tx-10">
@@ -86,11 +88,11 @@
                                     </p>
                                     @if(empty($web->company_logo))
                                         <div id="image_div" style="display:none;">
-                                            <img src="" id="img_temp" height="100" width="300" alt="Company Logo">  <br /><br />
+                                            <img src="" id="img_temp" height="100" width="300" alt="Company Logo" style="max-width: 100%;">  <br /><br />
                                         </div>
                                     @else
                                         <div>
-                                            <img src="{{ asset('storage/logos/'.$web->company_logo) }}" id="img_temp" height="100" width="300" alt="Company Logo" style="max-width: 100%;">  <br /><br />
+                                            <img src="{{ \App\Helpers\Setting::resolve_company_logo_url($web->company_logo) }}" id="img_temp" height="100" width="300" alt="Company Logo" style="max-width: 100%;">  <br /><br />
                                             <button type="button" class="btn btn-danger btn-xs btn-uppercase remove-logo" type="button" data-id=""><i data-feather="x"></i> Remove Logo</button>
                                         </div>
                                     @endif
@@ -98,8 +100,10 @@
 
                                 <div class="form-group {{ $errors->has('web_favicon') ? 'has-error' : '' }}">
                                     <label class="d-block">Favicon</label>
+                                    <input type="hidden" name="website_favicon" id="website_favicon_input" value="{{ old('website_favicon', $web->website_favicon) }}">
+                                    <a id="lfm-favicon" data-input="website_favicon_input" data-preview="icon_temp" style="display:none;" href="javascript:void(0)"></a>
                                     <div class="custom-file">
-                                        <input type="file" class="form-control" id="web_favicon" name="web_favicon" >
+                                        <input type="file" class="form-control" id="web_favicon">
                                         <span class="text-danger tx-12">{{ $errors->first('web_favicon') }}</span>
                                     </div>
                                     <p class="tx-10">
@@ -111,7 +115,7 @@
                                         </div>
                                     @else
                                         <div>
-                                            <img src="{{ asset('storage/icons/'.$web->website_favicon) }}" height="50" width="100" id="icon_temp" alt="Website Favicon">  <br /><br />
+                                            <img src="{{ \App\Helpers\Setting::resolve_favicon_url($web->website_favicon) }}" height="50" width="100" id="icon_temp" alt="Website Favicon">  <br /><br />
                                             <button type="button" class="btn btn-danger btn-xs btn-uppercase remove-icon" type="button"><i data-feather="x"></i> Remove Icon</button>
                                         </div>
                                     @endif
@@ -646,6 +650,7 @@
     <script src="{{ asset('lib/cleave.js/cleave.min.js')}}"></script>
     <script src="{{ asset('lib/cleave.js/addons/cleave-phone.us.js') }}"></script>
     <script src="{{ asset('lib/parsleyjs/parsley.min.js') }}"></script>
+    <script src="{{ asset('vendor/laravel-filemanager/js/lfm.js') }}"></script>
 @endsection
 
 @section('customjs')
@@ -727,28 +732,38 @@
             $('#mid').val($(this).data('mid'));
         });
 
-        // Company Logo
-        $("#company_logo").change(function() {
-            readLogo(this);
+        // Company Logo / Favicon via file manager
+        var route_prefix = "{{ url('laravel-filemanager') }}";
+
+        window.SetUrl = function (url) {
+            var targetInputId = localStorage.getItem('target_input');
+            var targetPreviewId = localStorage.getItem('target_preview');
+            var targetInput = $('#' + targetInputId);
+            var targetPreview = $('#' + targetPreviewId);
+
+            targetInput.val(url).trigger('change');
+            targetPreview.attr('src', url).show().trigger('change');
+
+            if (targetPreviewId === 'img_temp') {
+                $('#image_div').show();
+            }
+
+            if (targetPreviewId === 'icon_temp') {
+                $('#icon_div').show();
+            }
+        };
+
+        $('#lfm-logo').filemanager('image', {prefix: route_prefix});
+        $('#lfm-favicon').filemanager('image', {prefix: route_prefix});
+
+        $('#company_logo').on('click', function (e) {
+            e.preventDefault();
+            $('#lfm-logo').trigger('click');
         });
 
-        function readLogo(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-
-                reader.onload = function(e) {
-                    $('#img_temp').attr('src', e.target.result);
-                }
-
-                reader.readAsDataURL(input.files[0]);
-                $('#image_div').show();
-                $('.remove-logo').hide();
-            }
-        }
-
-        // Web Favicon
-        $("#web_favicon").change(function() {
-            readIcon(this);
+        $('#web_favicon').on('click', function (e) {
+            e.preventDefault();
+            $('#lfm-favicon').trigger('click');
         });
 
         $("#min_order").change(function() {
@@ -759,20 +774,6 @@
                 $('#promo_header').hide();
             }
         });
-
-        function readIcon(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-
-                reader.onload = function(e) {
-                    $('#icon_temp').attr('src', e.target.result);
-                }
-
-                reader.readAsDataURL(input.files[0]);
-                $('#icon_div').show();
-                $('.remove-icon').hide();
-            }
-        }
 
         
     </script>
