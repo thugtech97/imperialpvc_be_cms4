@@ -117,16 +117,94 @@ class Setting {
 
     public static function get_company_logo_storage_path()
     {
-        $settings = DB::table('settings')->where('id',1)->first();
-
-        return asset('storage').'/logos/'.$settings->company_logo;
+        return self::resolve_company_logo_url() ?? '';
     }
 
     public static function get_company_favicon_storage_path()
     {
-        $settings = DB::table('settings')->where('id',1)->first();
+        return self::resolve_favicon_url() ?? '';
+    }
 
-        return asset('storage').'/icons/'.$settings->website_favicon;
+    public static function resolve_managed_asset_url(?string $path): ?string
+    {
+        if ($path === null || trim($path) === '') {
+            return null;
+        }
+
+        $value = trim(str_replace('\\', '/', $path));
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        if (str_contains($value, 'file-manager')) {
+            if (str_starts_with($value, '/')) {
+                return url(ltrim($value, '/'));
+            }
+
+            return asset($value);
+        }
+
+        if (str_starts_with($value, '/storage/')) {
+            return asset(ltrim($value, '/'));
+        }
+
+        if (str_starts_with($value, 'storage/')) {
+            return asset($value);
+        }
+
+        if (str_starts_with($value, '/')) {
+            return asset(ltrim($value, '/'));
+        }
+
+        return asset('storage/logos/'.$value);
+    }
+
+    public static function resolve_company_logo_url(?string $path = null): ?string
+    {
+        if ($path === null) {
+            $settings = self::info();
+            $path = $settings->company_logo ?? null;
+        }
+
+        return self::resolve_managed_asset_url($path);
+    }
+
+    public static function resolve_favicon_url(?string $path = null): ?string
+    {
+        if ($path === null) {
+            $settings = self::getFaviconLogo();
+            $path = $settings->website_favicon ?? null;
+        }
+
+        if ($path === null || trim($path) === '') {
+            return null;
+        }
+
+        $value = trim(str_replace('\\', '/', $path));
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_contains($value, 'file-manager')) {
+            return self::resolve_managed_asset_url($value);
+        }
+
+        if (str_starts_with($value, 'storage/') || str_starts_with($value, '/storage/')) {
+            return self::resolve_managed_asset_url($value);
+        }
+
+        if (! str_contains($value, '/')) {
+            return asset('storage/icons/'.$value);
+        }
+
+        return self::resolve_managed_asset_url($value);
+    }
+
+    public static function resolve_user_avatar_url(?string $avatar): ?string
+    {
+        if ($avatar === null || trim($avatar) === '') {
+            return null;
+        }
+
+        return self::resolve_managed_asset_url($avatar) ?? asset(ltrim($avatar, '/'));
     }
 
     public static function EcommerceCartTotalItems()

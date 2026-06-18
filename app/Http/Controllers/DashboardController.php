@@ -14,7 +14,11 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-    	if(Auth::user()->role_id == '6'){
+    	if (!Auth::check()) {
+    		return redirect(route('panel.login'));
+    	}
+
+    	if (Auth::user()->role_id == '6') {
     		Auth::logout();
     		return back()->with('error','Restricted access');
     	}

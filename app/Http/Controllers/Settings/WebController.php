@@ -33,8 +33,8 @@ class WebController extends Controller
             'website_name' => 'required',
             'company_name' => 'required',
             'copyright'    => 'required',
-            'web_favicon'  => 'mimes:ico|max:100',
-            'company_logo' => 'image|mimes:jpeg,png,jpg,svg|max:1000',
+            'company_logo' => 'nullable|string|max:2000',
+            'website_favicon' => 'nullable|string|max:2000',
         ]);
 
 
@@ -46,17 +46,16 @@ class WebController extends Controller
         $web->google_map = $request->g_map;
         $web->user_id = Auth::id();
         $web->google_recaptcha_sitekey = $request->g_recaptcha_sitekey;
-        $web->save();
 
+        if ($request->has('company_logo')) {
+            $web->company_logo = trim((string) $request->company_logo);
+        }
 
-        if($web){
-            if($request->has('web_favicon')) {
-                $this->upload_favicons($request->file('web_favicon'));
-            }
+        if ($request->has('website_favicon')) {
+            $web->website_favicon = trim((string) $request->website_favicon);
+        }
 
-            if($request->has('company_logo')) {
-                $this->upload_logo($request->file('company_logo'));
-            }
+        if($web->save()){
             return back()->with('success', __('standard.settings.website.update_success'));
         } else {
             return back()->with('error', __('standard.settings.website.update_failed'));
@@ -98,8 +97,6 @@ class WebController extends Controller
         $web->user_id = Auth::id();
         $web->save();
 
-        Storage::delete(Setting::select('company_logo')->where('id',$web->id)->get());
-
         return back()->with('success', __('standard.settings.website.remove_logo_success'));
     }
 
@@ -109,8 +106,6 @@ class WebController extends Controller
         $web->website_favicon = '';
         $web->user_id = Auth::id();
         $web->save();
-
-        Storage::delete(Setting::select('website_favicon')->where('id',$web->id)->get());
 
         return back()->with('success', __('standard.settings.website.remove_favicon_success'));
     }
