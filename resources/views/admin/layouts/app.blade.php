@@ -11,8 +11,12 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>window.CMS_PUBLIC_URL = @json(rtrim(url('/'), '/'));</script>
     <title>{{ Setting::info()->company_name }}</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ \App\Helpers\Setting::resolve_favicon_url() ?? asset('storage').'/icons/'.Setting::getFaviconLogo()->website_favicon }}">
+    @php($faviconUrl = \App\Helpers\Setting::resolve_favicon_url())
+    @if($faviconUrl)
+    <link rel="shortcut icon" type="image/x-icon" href="{{ $faviconUrl }}">
+    @endif
 
     <!-- vendor css -->
     <link href="{{ asset('lib/@fortawesome/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
@@ -136,10 +140,9 @@
     </div>
 
     <script>
-        var app_url = "{{ env('APP_URL') }}";
-        var app__url_prefix = "{{ env('APP_URL') }}"
-        // var app__url_prefix = "/cms9_phcc/public"
-        //var app_url = "http://localhost:8000";
+        var app_url = window.CMS_PUBLIC_URL || "{{ rtrim(url('/'), '/') }}";
+        var app__url_prefix = app_url;
+        window.CMS_FOOTER_BG_URL = @json(rtrim(env('FRONTEND_URL', url('/')), '/') . '/images/highlights/roofing1.jpg');
     </script>
     
     <script src="{{ asset('lib/jquery/jquery.min.js') }}"></script>

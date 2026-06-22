@@ -130,7 +130,7 @@ class PublicPageController extends Controller
     public function footer()
     {
         $footer = Page::where('slug', 'footer')
-            ->where('status', 'published')
+            ->where('status', 'PUBLISHED')
             ->first();
 
         if (!$footer) {
@@ -143,7 +143,10 @@ class PublicPageController extends Controller
             'data' => [
                 'id' => $footer->id,
                 'slug' => $footer->slug,
+                'content' => $footer->contents,
                 'contents' => $footer->contents,
+                'styles' => $footer->styles,
+                'json' => $footer->json,
             ]
         ]);
     }

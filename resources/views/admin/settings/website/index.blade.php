@@ -80,7 +80,7 @@
                                     <input type="hidden" name="company_logo" id="company_logo_input" value="{{ old('company_logo', $web->company_logo) }}">
                                     <a id="lfm-logo" data-input="company_logo_input" data-preview="img_temp" style="display:none;" href="javascript:void(0)"></a>
                                     <div class="custom-file">
-                                        <input type="file" class="form-control" id="company_logo">
+                                        <input type="file" class="form-control" id="company_logo" name="company_logo_upload" accept="image/*">
                                         <span class="text-danger tx-12">{{ $errors->first('company_logo') }}</span>
                                     </div>
                                     <p class="tx-10">
@@ -103,7 +103,7 @@
                                     <input type="hidden" name="website_favicon" id="website_favicon_input" value="{{ old('website_favicon', $web->website_favicon) }}">
                                     <a id="lfm-favicon" data-input="website_favicon_input" data-preview="icon_temp" style="display:none;" href="javascript:void(0)"></a>
                                     <div class="custom-file">
-                                        <input type="file" class="form-control" id="web_favicon">
+                                        <input type="file" class="form-control" id="web_favicon" name="website_favicon_upload" accept="image/*">
                                         <span class="text-danger tx-12">{{ $errors->first('web_favicon') }}</span>
                                     </div>
                                     <p class="tx-10">
@@ -269,10 +269,10 @@
                                             // Replace the <textarea id="editor1"> with a CKEditor
                                             // instance, using default configuration.
                                             var options = {
-                                                filebrowserImageBrowseUrl: '{{ env('APP_URL') }}/laravel-filemanager?type=Images',
-                                                filebrowserImageUpload: '{{ env('APP_URL') }}/laravel-filemanager/upload?type=Images&_token={{ csrf_token() }}',
-                                                filebrowserBrowseUrl: '{{ env('APP_URL') }}/laravel-filemanager?type=Files',
-                                                filebrowserUploadUrl: '{{ env('APP_URL') }}/laravel-filemanager/upload?type=Files&_token={{ csrf_token() }}',
+                                                filebrowserImageBrowseUrl: '{{ url('laravel-filemanager') }}?type=Images',
+                                                filebrowserImageUpload: '{{ url('laravel-filemanager/upload') }}?type=Images&_token={{ csrf_token() }}',
+                                                filebrowserBrowseUrl: '{{ url('laravel-filemanager') }}?type=Files',
+                                                filebrowserUploadUrl: '{{ url('laravel-filemanager/upload') }}?type=Files&_token={{ csrf_token() }}',
                                                 allowedContent: true,
                                             };
                                             let editor = CKEDITOR.replace('content', options);
