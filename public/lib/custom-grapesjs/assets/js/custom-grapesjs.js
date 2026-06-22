@@ -121,6 +121,7 @@ const editor = grapesjs.init({
             app_url + "/theme/css/fonts.css",
             app_url + "/theme/css/cafe.css",  
             app_url + "/theme/css/custom.css",
+            app_url + "/css/grapesjs-footer.css",
         ],
         scripts: [
             app_url + "/theme/js/slick.js",
@@ -469,6 +470,41 @@ const editor = grapesjs.init({
     colorPicker: { appendTo: "parent", offset: { top: 30, left: -174 } },
 });
 
+function getFooterBackgroundUrl() {
+    if (typeof window.CMS_FOOTER_BG_URL === "string" && window.CMS_FOOTER_BG_URL) {
+        return window.CMS_FOOTER_BG_URL;
+    }
+
+    return app_url + "/images/highlights/roofing1.jpg";
+}
+
+function injectFooterCanvasBackground() {
+    var frame = editor.Canvas.getFrameEl();
+    if (!frame || !frame.contentDocument) {
+        return;
+    }
+
+    var doc = frame.contentDocument;
+    var bgUrl = getFooterBackgroundUrl();
+    var css =
+        '.footer{background:linear-gradient(135deg,rgba(139,0,0,0.9) 0%,rgba(204,51,0,0.9) 50%,rgba(255,107,53,0.9) 100%),url("' +
+        bgUrl +
+        '") center/cover no-repeat!important;}';
+    var styleEl = doc.getElementById("cms-footer-bg-fix");
+
+    if (styleEl) {
+        styleEl.textContent = css;
+        return;
+    }
+
+    styleEl = doc.createElement("style");
+    styleEl.id = "cms-footer-bg-fix";
+    styleEl.textContent = css;
+    doc.head.appendChild(styleEl);
+}
+
+editor.on("canvas:frame:load", injectFooterCanvasBackground);
+
 editor.StorageManager.add("simpleStorage", {
     store(data, clb, clbErr) {
         $("#json").val(JSON.stringify(data));
@@ -498,14 +534,39 @@ window.addEventListener("load", () => {
         });
     }, 3000);
     
-    if(jsPage && jsPage != "null") {
-        let jsComponents = JSON.parse(jsPage)["gjs-components"];
-        let jsStyles = JSON.parse(jsPage)["gjs-styles"];
-        editor.addComponents(JSON.parse(jsComponents));
-        editor.setStyle(JSON.parse(jsStyles));
-    } else {
-        editor.addComponents(jsHtml + "<style>" + jsStyle + "</style>");
+    var savedPageStyles = "";
+    var stylesInput = document.getElementById("styles");
+    if (stylesInput && stylesInput.value) {
+        savedPageStyles = stylesInput.value.trim();
+    } else if (typeof jsStyle !== "undefined" && jsStyle) {
+        savedPageStyles = String(jsStyle).trim();
     }
+
+    if (jsPage && jsPage != "null") {
+        var parsedPage = JSON.parse(jsPage);
+        var jsComponents = parsedPage["gjs-components"];
+        var jsStyles = parsedPage["gjs-styles"];
+
+        if (jsComponents) {
+            editor.addComponents(JSON.parse(jsComponents));
+        }
+
+        if (jsStyles) {
+            editor.setStyle(JSON.parse(jsStyles));
+        }
+
+        if (!savedPageStyles && parsedPage["gjs-css"]) {
+            savedPageStyles = String(parsedPage["gjs-css"]).trim();
+        }
+
+        if (savedPageStyles) {
+            editor.addComponents('<style data-cms-page-styles="1">' + savedPageStyles + "</style>");
+        }
+    } else if (typeof jsHtml !== "undefined") {
+        editor.addComponents(jsHtml + "<style>" + (typeof jsStyle !== "undefined" ? jsStyle : "") + "</style>");
+    }
+
+    setTimeout(injectFooterCanvasBackground, 300);
 
     $("#desktop-view").on("click", (event) => {
         editor.Commands.run("set-device-desktop");

@@ -65,6 +65,7 @@ class Permission extends Model
             'menu' => 'Menu',
             'news' => 'News',
             'news_category' => 'News Category',
+            'testimonials' => 'Testimonials',
             'website_settings' => 'Website Settings',
             'audit_logs' => 'Audit Trail',
             'user' => 'Users',

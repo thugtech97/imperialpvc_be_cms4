@@ -39,29 +39,40 @@ CKEDITOR.editorConfig = function(config) {
     config.protectedSource.push(/<span[^>]*><\/span>/g);
     config.protectedSource.push(/<a[^>]*><\/a>/g);
 
-    let prefix = '';
-    if (window.location.origin.includes('cms4.webfocusprod.wsiph2.com')) {
-        prefix = '/cms4-ecom-precious/public/theme/';
-    } else {
-        prefix = '/theme/';
-    }
+    var publicBase = (function () {
+        if (typeof window.CMS_PUBLIC_URL === 'string' && window.CMS_PUBLIC_URL) {
+            return window.CMS_PUBLIC_URL.replace(/\/$/, '');
+        }
 
-    config.contentsCss = [window.location.origin + prefix + 'plugins/bootstrap/css/bootstrap.css',
-        window.location.origin + prefix + 'plugins/fontawesome/css/all.min.css',
-        window.location.origin + prefix + 'plugins/linearicon/linearicon.min.css',
-        window.location.origin + prefix + 'plugins/responsive-tabs/css/responsive-tabs.css',
-        window.location.origin + prefix + 'plugins/slick/slick.css',
-        window.location.origin + prefix + 'plugins/slick/slick-theme.css',
-        window.location.origin + prefix + 'css/tagsinput.min.css',
-        window.location.origin + prefix + 'plugins/rd-navbar/rd-navbar.css',
-        window.location.origin + prefix + 'plugins/aos/dist/aos.min.css',
-        window.location.origin + prefix + 'css/animate.min.css',
-        window.location.origin + prefix + 'css/style.css'];
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        var publicIdx = parts.indexOf('public');
 
-    config.filebrowserImageBrowseUrl = window.location.origin + '/laravel-filemanager?type=Images';
-    config.filebrowserImageUpload = window.location.origin + '/laravel-filemanager/upload?type=Images';
-    config.filebrowserBrowseUrl = window.location.origin + '/laravel-filemanager?type=Files';
-    config.filebrowserUploadUrl = window.location.origin + '/laravel-filemanager/upload?type=Files';
+        if (publicIdx >= 0) {
+            return window.location.origin + '/' + parts.slice(0, publicIdx + 1).join('/');
+        }
+
+        return window.location.origin;
+    })();
+
+    var themeBase = publicBase + '/theme/';
+    var lfmBase = publicBase + '/laravel-filemanager';
+
+    config.contentsCss = [themeBase + 'plugins/bootstrap/css/bootstrap.css',
+        themeBase + 'plugins/fontawesome/css/all.min.css',
+        themeBase + 'plugins/linearicon/linearicon.min.css',
+        themeBase + 'plugins/responsive-tabs/css/responsive-tabs.css',
+        themeBase + 'plugins/slick/slick.css',
+        themeBase + 'plugins/slick/slick-theme.css',
+        themeBase + 'css/tagsinput.min.css',
+        themeBase + 'plugins/rd-navbar/rd-navbar.css',
+        themeBase + 'plugins/aos/dist/aos.min.css',
+        themeBase + 'css/animate.min.css',
+        themeBase + 'css/style.css'];
+
+    config.filebrowserImageBrowseUrl = lfmBase + '?type=Images';
+    config.filebrowserImageUpload = lfmBase + '/upload?type=Images';
+    config.filebrowserBrowseUrl = lfmBase + '?type=Files';
+    config.filebrowserUploadUrl = lfmBase + '/upload?type=Files';
 
     // Define changes to default configuration here. For example:
     // config.language = 'fr';

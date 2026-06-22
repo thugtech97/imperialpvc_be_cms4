@@ -35,6 +35,8 @@ class WebController extends Controller
             'copyright'    => 'required',
             'company_logo' => 'nullable|string|max:2000',
             'website_favicon' => 'nullable|string|max:2000',
+            'company_logo_upload' => 'nullable|image|max:2048',
+            'website_favicon_upload' => 'nullable|image|max:2048',
         ]);
 
 
@@ -47,11 +49,15 @@ class WebController extends Controller
         $web->user_id = Auth::id();
         $web->google_recaptcha_sitekey = $request->g_recaptcha_sitekey;
 
-        if ($request->has('company_logo')) {
+        if ($request->hasFile('company_logo_upload')) {
+            $this->upload_logo($request->file('company_logo_upload'));
+        } elseif ($request->filled('company_logo')) {
             $web->company_logo = trim((string) $request->company_logo);
         }
 
-        if ($request->has('website_favicon')) {
+        if ($request->hasFile('website_favicon_upload')) {
+            $this->upload_favicons($request->file('website_favicon_upload'));
+        } elseif ($request->filled('website_favicon')) {
             $web->website_favicon = trim((string) $request->website_favicon);
         }
 
