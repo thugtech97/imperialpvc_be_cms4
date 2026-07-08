@@ -12,7 +12,18 @@ class TestimonialController extends Controller
 {
     public function __construct()
     {
-        Permission::module_init($this, 'testimonials');
+        $permissions = Permission::where('module', 'testimonials')->get();
+
+        foreach ($permissions as $permission) {
+            $methods = array_values(array_filter(
+                (array) $permission->methods,
+                static fn ($method) => $method !== 'fetch_testimonials'
+            ));
+
+            if ($methods !== []) {
+                $this->middleware('checkAccessRights:'.$permission->id, ['only' => $methods]);
+            }
+        }
     }
 
     public function index(Request $request)

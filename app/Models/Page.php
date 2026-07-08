@@ -103,8 +103,7 @@ class Page extends Model
 
     public function get_url()
     {
-        // return env('APP_URL')."/".$this->slug;
-        return env('FRONTEND_URL')."/public/".$this->slug;
+        return \App\Helpers\Setting::public_page_url($this->slug);
     }
 
     public static function totalPages()

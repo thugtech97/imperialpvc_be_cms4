@@ -115,6 +115,7 @@
                                     <th scope="col">Brand</th>
                                     <!-- <th scope="col">Price</th> -->
                                     <th scope="col">Status</th>
+                                    <th scope="col">Updated</th>
                                     <th scope="col">Options</th>
                                 </tr>
                             </thead>
@@ -123,7 +124,12 @@
                                     <tr>
                                         <td>
                                             @if($product->image_url)
-                                                <img src="{{ Storage::disk('public')->url($product->image_url) }}" alt="{{ $product->name }}" style="width:48px; height:48px; object-fit:cover; border-radius:4px;">
+                                                @php
+                                                    $rawImage = trim((string) $product->image_url);
+                                                    $token = rtrim(strtr(base64_encode($rawImage), '+/', '-_'), '=');
+                                                    $productImageSrc = route('products.image', ['token' => $token]);
+                                                @endphp
+                                                <img src="{{ $productImageSrc }}" alt="{{ $product->name }}" style="width:48px; height:48px; object-fit:cover; border-radius:4px;">
                                             @else
                                                 <div style="width:48px; height:48px; background:#eee; border-radius:4px; display:flex; align-items:center; justify-content:center;">
                                                     <i data-feather="image" style="color:#aaa;"></i>
@@ -150,6 +156,9 @@
                                             @else
                                                 <span class="badge badge-danger">Inactive</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <span class="text-nowrap">{{ \App\Helpers\Setting::date_for_listing($product->updated_at) }}</span>
                                         </td>
                                         <td>
                                             <nav class="nav table-options justify-content-start align-items-center flex-nowrap">

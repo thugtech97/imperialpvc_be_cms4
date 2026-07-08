@@ -69,7 +69,7 @@ class PageContactUsRequest extends FormRequest
                     }
                 }
             },
-            'content2' => 'required',
+            'content2' => 'nullable',
             'image_url' => 'nullable',
             'visibility' => '',
             'meta_title' => 'max:60',

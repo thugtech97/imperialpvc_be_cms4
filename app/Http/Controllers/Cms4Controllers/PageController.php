@@ -204,7 +204,7 @@ class PageController extends Controller
 
         $settings = \App\Models\Setting::find(1);
         $settings->update([
-            'contact_us_email_layout' => $updateData['content2']
+            'contact_us_email_layout' => $updateData['content2'] ?? $settings->contact_us_email_layout,
         ]);
 
         $this->add_and_remove_email_recipients($updateData['emails']);

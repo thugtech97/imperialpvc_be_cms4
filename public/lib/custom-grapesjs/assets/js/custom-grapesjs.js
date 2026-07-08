@@ -470,12 +470,43 @@ const editor = grapesjs.init({
     colorPicker: { appendTo: "parent", offset: { top: 30, left: -174 } },
 });
 
+function getPublicSiteBaseUrl() {
+    if (typeof window.CMS_FRONTEND_URL === "string" && window.CMS_FRONTEND_URL) {
+        return window.CMS_FRONTEND_URL.replace(/\/$/, "");
+    }
+
+    if (typeof window.CMS_FOOTER_BG_URL === "string" && window.CMS_FOOTER_BG_URL) {
+        return window.CMS_FOOTER_BG_URL.replace(/\/images\/highlights\/roofing1\.jpg$/, "");
+    }
+
+    return String(app_url || "").replace(/\/$/, "");
+}
+
 function getFooterBackgroundUrl() {
     if (typeof window.CMS_FOOTER_BG_URL === "string" && window.CMS_FOOTER_BG_URL) {
         return window.CMS_FOOTER_BG_URL;
     }
 
-    return app_url + "/images/highlights/roofing1.jpg";
+    return getPublicSiteBaseUrl() + "/images/highlights/roofing1.jpg";
+}
+
+function resolvePublicAssetUrl(src) {
+    if (!src || /^https?:\/\//i.test(src) || src.startsWith("//") || src.startsWith("data:")) {
+        return src;
+    }
+
+    var assetBase = getPublicSiteBaseUrl();
+
+    if (src.charAt(0) === "/") {
+        return assetBase + src;
+    }
+
+    var imageMatch = src.match(/(?:\.\.\/)*images\/(.+)$/i);
+    if (imageMatch) {
+        return assetBase + "/images/" + imageMatch[1];
+    }
+
+    return assetBase + "/" + src.replace(/^(\.\.\/)+/, "");
 }
 
 function injectFooterCanvasBackground() {
@@ -503,7 +534,28 @@ function injectFooterCanvasBackground() {
     doc.head.appendChild(styleEl);
 }
 
-editor.on("canvas:frame:load", injectFooterCanvasBackground);
+function fixFooterCanvasAssets() {
+    var frame = editor.Canvas.getFrameEl();
+    if (!frame || !frame.contentDocument) {
+        return;
+    }
+
+    var doc = frame.contentDocument;
+
+    doc.querySelectorAll("img[src]").forEach(function (img) {
+        var resolved = resolvePublicAssetUrl(img.getAttribute("src"));
+        if (resolved && resolved !== img.getAttribute("src")) {
+            img.setAttribute("src", resolved);
+        }
+    });
+}
+
+function syncFooterCanvasPresentation() {
+    injectFooterCanvasBackground();
+    fixFooterCanvasAssets();
+}
+
+editor.on("canvas:frame:load", syncFooterCanvasPresentation);
 
 editor.StorageManager.add("simpleStorage", {
     store(data, clb, clbErr) {
@@ -566,7 +618,8 @@ window.addEventListener("load", () => {
         editor.addComponents(jsHtml + "<style>" + (typeof jsStyle !== "undefined" ? jsStyle : "") + "</style>");
     }
 
-    setTimeout(injectFooterCanvasBackground, 300);
+    setTimeout(syncFooterCanvasPresentation, 300);
+    setTimeout(syncFooterCanvasPresentation, 1200);
 
     $("#desktop-view").on("click", (event) => {
         editor.Commands.run("set-device-desktop");

@@ -1,6 +1,6 @@
 <ul class="nav nav-aside">
     <li class="nav-item">
-        <a href="{{ env('FRONTEND_URL') . '/public/home' }}"" target="_blank" class="nav-link">
+        <a href="{{ Setting::public_page_url('home') }}" target="_blank" class="nav-link">
             <i data-feather="external-link"></i>
             <span>View Website</span>
         </a>
@@ -131,7 +131,9 @@
             <ul>
                 <li @if (request()->routeIs('role*')) class="active" @endif><a href="{{ route('role.index') }}">Roles</a></li>
                 <li @if (request()->routeIs('access*')) class="active" @endif><a href="{{ route('access.index') }}">Access Rights</a></li>
-                <li @if (request()->routeIs('permission*')) class="active" @endif><a href="{{ route('permission.index') }}">Permissions</a></li>
+                @if (Route::has('permission.index'))
+                    <li @if (request()->routeIs('permission*')) class="active" @endif><a href="{{ route('permission.index') }}">Permissions</a></li>
+                @endif
             </ul>
         </li>
     @endif

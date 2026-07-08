@@ -1,4 +1,4 @@
-Dear {{ $adminInfo->firstname }},
+Dear {{ trim($adminInfo->name ?? '') !== '' ? $adminInfo->name : 'Admin' }},
 
 {{ $clientInfo['name'] }} has sent an inquiry for your action.
 Please see details of the inquiry below.

@@ -101,8 +101,13 @@
                 <div class="form-group">
                     <label class="d-block">Product Image</label>
                     @if($product->image_url)
+                        @php
+                            $rawImage = trim((string) $product->image_url);
+                            $token = rtrim(strtr(base64_encode($rawImage), '+/', '-_'), '=');
+                            $productImageSrc = route('products.image', ['token' => $token]);
+                        @endphp
                         <div class="mg-b-10">
-                            <img id="previewImg" src="{{ Storage::disk('public')->url($product->image_url) }}" alt="Current Image" style="max-height:120px; border-radius:4px; border:1px solid #dee2e6;">
+                            <img id="previewImg" src="{{ $productImageSrc }}" alt="Current Image" style="max-height:120px; border-radius:4px; border:1px solid #dee2e6;">
                             <div class="tx-12 tx-gray-500 mg-t-5">Current image — upload a new one to replace it.</div>
                         </div>
                     @else

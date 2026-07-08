@@ -125,6 +125,62 @@ class Setting {
         return self::resolve_favicon_url() ?? '';
     }
 
+    public static function frontend_url(): string
+    {
+        $configured = rtrim((string) config('app.frontend_url', ''), '/');
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        $host = parse_url((string) config('app.url', ''), PHP_URL_HOST) ?: '';
+
+        $knownHosts = [
+            'beta.imperialpvc.com' => 'https://beta-imperialpvc.vercel.app',
+            'localhost' => 'http://localhost:3000',
+            '127.0.0.1' => 'http://localhost:3000',
+        ];
+
+        if (isset($knownHosts[$host])) {
+            return $knownHosts[$host];
+        }
+
+        return '';
+    }
+
+    public static function public_page_url(?string $slug): string
+    {
+        $slug = trim((string) $slug, '/');
+        if ($slug === '' || $slug === 'home') {
+            $path = '/';
+        } else {
+            $path = '/'.$slug;
+        }
+
+        $base = self::frontend_url();
+
+        return $base !== '' ? $base.$path : $path;
+    }
+
+    public static function public_news_url(?string $slug = null): string
+    {
+        $slug = trim((string) $slug, '/');
+        $path = $slug === '' ? '/news' : '/news/'.$slug;
+        $base = self::frontend_url();
+
+        return $base !== '' ? $base.$path : $path;
+    }
+
+    public static function footer_background_url(): string
+    {
+        $frontendUrl = self::frontend_url();
+
+        if ($frontendUrl !== '') {
+            return $frontendUrl.'/images/highlights/roofing1.jpg';
+        }
+
+        return rtrim(url('/'), '/').'/images/highlights/roofing1.jpg';
+    }
+
     public static function resolve_managed_asset_url(?string $path): ?string
     {
         if ($path === null || trim($path) === '') {

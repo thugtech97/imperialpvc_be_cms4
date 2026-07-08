@@ -61,6 +61,26 @@ class Banner extends Model
         return $path[$nameIndex];
     }
 
+    public function getImagePathAttribute($value)
+    {
+        if ($value === null || trim($value) === '') {
+            return $value;
+        }
+
+        $value = preg_replace('#(?<!:)/{2,}#', '/', $value);
+
+        if (!preg_match('#^(https?://[^/]+)(/.*)$#i', $value, $matches)) {
+            return $value;
+        }
+
+        $segments = explode('/', trim($matches[2], '/'));
+        $encodedPath = '/'.implode('/', array_map(function ($segment) {
+            return rawurlencode(rawurldecode($segment));
+        }, $segments));
+
+        return $matches[1].$encodedPath;
+    }
+
 
 
 

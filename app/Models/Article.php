@@ -17,7 +17,7 @@ class Article extends Model
 
     public static function base_front_url()
     {
-        return env('APP_URL')."/news/";
+        return \App\Helpers\Setting::public_news_url();
     }
 
     public static function totalArticles()
@@ -64,8 +64,7 @@ class Article extends Model
 
     public function get_url()
     {
-
-        return env('APP_URL')."/news/".$this->slug;
+        return \App\Helpers\Setting::public_news_url($this->slug);
     }
 
     public function date_posted()
@@ -80,10 +79,12 @@ class Article extends Model
 
     public function get_image_url_storage_path()
     {
-        $delimiter = 'storage/';
-        if (strpos($this->image_url, $delimiter) !== false) {
-            $paths = explode($delimiter, $this->image_url);
-            return $paths[1];
+        $imageUrl = rawurldecode($this->getAttributes()['image_url'] ?? '');
+
+        if (str_contains($imageUrl, 'storage/')) {
+            $paths = explode('storage/', $imageUrl);
+
+            return preg_replace('#/+#', '/', end($paths));
         }
 
         return '';
@@ -91,10 +92,12 @@ class Article extends Model
 
     public function get_thumbnail_url_storage_path()
     {
-        $delimiter = 'storage/';
-        if (strpos($this->thumbnail_url, $delimiter) !== false) {
-            $paths = explode($delimiter, $this->thumbnail_url);
-            return $paths[1];
+        $thumbnailUrl = rawurldecode($this->getAttributes()['thumbnail_url'] ?? '');
+
+        if (str_contains($thumbnailUrl, 'storage/')) {
+            $paths = explode('storage/', $thumbnailUrl);
+
+            return preg_replace('#/+#', '/', end($paths));
         }
 
         return '';
@@ -107,7 +110,37 @@ class Article extends Model
         if ($nameIndex < 0)
             return '';
 
-        return $path[$nameIndex];
+        return rawurldecode($path[$nameIndex]);
+    }
+
+    public function getImageUrlAttribute($value)
+    {
+        return $this->normalize_media_url($value);
+    }
+
+    public function getThumbnailUrlAttribute($value)
+    {
+        return $this->normalize_media_url($value);
+    }
+
+    protected function normalize_media_url($value)
+    {
+        if ($value === null || trim($value) === '') {
+            return $value;
+        }
+
+        $value = preg_replace('#(?<!:)/{2,}#', '/', $value);
+
+        if (!preg_match('#^(https?://[^/]+)(/.*)$#i', $value, $matches)) {
+            return $value;
+        }
+
+        $segments = explode('/', trim($matches[2], '/'));
+        $encodedPath = '/'.implode('/', array_map(function ($segment) {
+            return rawurlencode(rawurldecode($segment));
+        }, $segments));
+
+        return $matches[1].$encodedPath;
     }
 
     public function featured_news_limit()

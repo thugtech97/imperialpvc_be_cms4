@@ -131,6 +131,7 @@ Route::get('/phpinfo', function () {
 // ADMIN ROUTES
 Route::get('/admin-panel', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/product-image/{token}', [ProductController::class, 'productImage'])->name('products.image');
         
 Route::group(['prefix' => 'admin-panel'], function (){
     Route::get('/', [LoginController::class, 'showLoginForm'])->name('panel.login');
@@ -189,15 +190,12 @@ Route::group(['prefix' => 'admin-panel'], function (){
             Route::resource('/access', AccessController::class);
             Route::post('/roles_and_permissions/update', [AccessController::class, 'update_roles_and_permissions'])->name('role-permission.update');
 
-            if (env('APP_DEBUG') == "true") {
-                // Permission Routes
-                Route::resource('/permission', PermissionController::class)->except(['destroy']);
-                Route::get('/permission-search/', [PermissionController::class, 'search'])->name('permission.search');
-                Route::post('/permission/destroy', [PermissionController::class, 'destroy'])->name('permission.destroy');
-                Route::get('/permission/restore/{id}', [PermissionController::class, 'restore'])->name('permission.restore');
-                Route::post('permission/delete', [PermissionController::class, 'delete'])->name('permission.delete');
-
-            }
+            // Permission Routes
+            Route::resource('/permission', PermissionController::class)->except(['destroy']);
+            Route::get('/permission-search/', [PermissionController::class, 'search'])->name('permission.search');
+            Route::post('/permission/destroy', [PermissionController::class, 'destroy'])->name('permission.destroy');
+            Route::get('/permission/restore/{id}', [PermissionController::class, 'restore'])->name('permission.restore');
+            Route::post('permission/delete', [PermissionController::class, 'delete'])->name('permission.delete');
         //
 
 

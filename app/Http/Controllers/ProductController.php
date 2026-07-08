@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -69,7 +70,7 @@ class ProductController extends Controller
         $validated['slug'] = Str::slug($validated['slug']);
 
         if ($request->hasFile('image')) {
-            $validated['image_url'] = $request->file('image')->store('products', 'public');
+            $validated['image_url'] = $this->storePublicProductImage($request->file('image'));
         }
 
         unset($validated['image']);
@@ -104,10 +105,8 @@ class ProductController extends Controller
         $validated['slug'] = Str::slug($validated['slug']);
 
         if ($request->hasFile('image')) {
-            if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
-                Storage::disk('public')->delete($product->image_url);
-            }
-            $validated['image_url'] = $request->file('image')->store('products', 'public');
+            $this->deleteProductImage($product->image_url);
+            $validated['image_url'] = $this->storePublicProductImage($request->file('image'));
         }
 
         unset($validated['image']);
@@ -151,25 +150,35 @@ class ProductController extends Controller
 
         $products = Product::with('category')
             ->where('status', 'active')
-            ->orderBy('name')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('created_at')
             ->paginate($perPage);
 
-        $items = $products->getCollection()->map(fn (Product $p) => [
+        $items = $products->getCollection()->map(function (Product $p) {
+            $rawImage = trim((string) ($p->image_url ?? ''));
+            $resolvedImage = null;
+
+            if ($rawImage !== '') {
+                $resolvedImage = url('/product-image/'.$this->encodeImageToken($rawImage));
+            }
+
+            return [
             'id'          => $p->id,
             'slug'        => $p->slug,
             'name'        => $p->name,
             'description' => $p->description,
             'price'       => $p->price,
-            'image_url'   => $p->image_url
-                                ? asset('storage/' . $p->image_url)
-                                : null,
+            'image_url'   => $resolvedImage,
             'category_id' => $p->category_id,
+            'created_at'  => optional($p->created_at)->toDateTimeString(),
+            'updated_at'  => optional($p->updated_at)->toDateTimeString(),
             'category'    => $p->category ? [
                 'id'   => $p->category->id,
                 'name' => $p->category->name,
                 'slug' => $p->category->slug,
             ] : null,
-        ]);
+        ];
+        });
 
         return response()->json([
             'data' => $items,
@@ -233,5 +242,134 @@ class ProductController extends Controller
         });
 
         return response()->json($products);
+    }
+
+    public function productImage(string $token)
+    {
+        $rawImage = $this->decodeImageToken($token);
+        if ($rawImage === null || trim($rawImage) === '') {
+            abort(404);
+        }
+
+        $resolvedPath = $this->resolveProductImagePath($rawImage);
+        if ($resolvedPath === null) {
+            abort(404);
+        }
+
+        return response()->file($resolvedPath, [
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
+    private function storePublicProductImage($file): string
+    {
+        $directory = public_path('storage/products');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $filename = Str::uuid()->toString().'.'.$file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return 'products/'.$filename;
+    }
+
+    private function deleteProductImage(?string $imagePath): void
+    {
+        if ($imagePath === null || trim($imagePath) === '') {
+            return;
+        }
+
+        $value = trim(str_replace('\\', '/', $imagePath));
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            $parsedPath = parse_url($value, PHP_URL_PATH);
+            $value = is_string($parsedPath) ? $parsedPath : '';
+        }
+
+        if ($value === '') {
+            return;
+        }
+
+        $storagePos = strpos($value, '/storage/');
+        if ($storagePos !== false) {
+            $value = substr($value, $storagePos + 9);
+        }
+
+        $value = ltrim($value, '/');
+        if (str_starts_with($value, 'storage/')) {
+            $value = ltrim(substr($value, 8), '/');
+        }
+
+        if ($value === '') {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($value)) {
+            Storage::disk('public')->delete($value);
+        }
+
+        $publicStorageFile = public_path('storage/'.$value);
+        if (is_file($publicStorageFile)) {
+            @unlink($publicStorageFile);
+        }
+    }
+
+    private function encodeImageToken(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+    }
+
+    private function decodeImageToken(string $token): ?string
+    {
+        $decoded = base64_decode(strtr($token, '-_', '+/'), true);
+        return $decoded === false ? null : $decoded;
+    }
+
+    private function resolveProductImagePath(string $imagePath): ?string
+    {
+        $value = trim(str_replace('\\', '/', $imagePath));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            $parsedPath = parse_url($value, PHP_URL_PATH);
+            $value = is_string($parsedPath) ? $parsedPath : '';
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        $storagePos = strpos($value, '/storage/');
+        if ($storagePos !== false) {
+            $value = substr($value, $storagePos + 9);
+        }
+
+        $value = ltrim($value, '/');
+        if (str_starts_with($value, 'storage/')) {
+            $value = ltrim(substr($value, 8), '/');
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        $candidates = [
+            public_path('storage/'.$value),
+            storage_path('app/public/'.$value),
+            public_path($value),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path) && File::exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 }

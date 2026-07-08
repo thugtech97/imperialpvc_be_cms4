@@ -95,19 +95,21 @@
                         </thead>
                         <tbody>
 							@forelse($logs as $log)
-								@if($log->admin != null)
-									<tr>
-										<td>
+								<tr>
+									<td>
+										@if($log->admin != null)
 											<a href="{{ route('users.show', $log->log_by) }}"><strong>{{ ucwords($log->admin->fullname) }}</strong><br><span class="badge badge-primary">{{ $log->admin->userRole($log->log_by) }}</span></a>
-										</td>
-										<td>{{ $log->activity_type }}</td>
-										<td><a class="log_values" href="#modal-values" data-toggle="modal" data-new="{{$log->new_value}}" data-old="{{$log->old_value}}">{{ \Illuminate\Support\Str::limit($log->activity_desc, 50, $end ='...') }}</a></td>
-										<td>{{ \Illuminate\Support\Str::limit($log->old_value, 30, $end ='...') }}</td>
-										<td>{{ \Illuminate\Support\Str::limit($log->new_value, 30, $end ='...') }}</td>
-										<td>{{ ucwords($log->db_table) }}</td>
-										<td>{{ $log->activity_date }}</td>
-									</tr>
-								@endif
+										@else
+											<strong>System / Unknown User</strong><br><span class="badge badge-secondary">N/A</span>
+										@endif
+									</td>
+									<td>{{ $log->activity_type }}</td>
+									<td><a class="log_values" href="#modal-values" data-toggle="modal" data-new="{{$log->new_value}}" data-old="{{$log->old_value}}">{{ \Illuminate\Support\Str::limit($log->activity_desc, 50, $end ='...') }}</a></td>
+									<td>{{ \Illuminate\Support\Str::limit($log->old_value, 30, $end ='...') }}</td>
+									<td>{{ \Illuminate\Support\Str::limit($log->new_value, 30, $end ='...') }}</td>
+									<td>{{ ucwords($log->db_table) }}</td>
+									<td>{{ $log->activity_date }}</td>
+								</tr>
 							@empty
 								<tr><td colspan="8"><center>Activity not found!</center></td></tr>
 							@endforelse

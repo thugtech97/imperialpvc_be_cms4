@@ -41,8 +41,7 @@
             <img src="{{ Setting::get_company_logo_storage_path() }}" alt="company logo" width="175" />
         </div>
 
-        <p style="margin-top: 30px;"><strong>Dear {{ $adminInfo->name }},</strong></p>
-        {{-- <p style="margin-top: 30px;"><strong>Dear {{ $adminInfo->firstname }},</strong></p> --}}
+        <p style="margin-top: 30px;"><strong>Dear {{ trim($adminInfo->name ?? '') !== '' ? $adminInfo->name : 'Admin' }},</strong></p>
 
         <p>
             {{ $clientInfo['name'] }} has submitted an inquiry requiring your prompt attention.

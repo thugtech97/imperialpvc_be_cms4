@@ -47,7 +47,7 @@
                 <h4 class="mg-b-0 tx-spacing--1">Edit a Page</h4>
             </div>
             <div>
-                <a class="btn btn-outline-primary btn-sm" href="/{{$page->get_url()}}" target="_blank">Preview Page</a>
+                <a class="btn btn-outline-primary btn-sm" href="{{ $page->get_url() }}" target="_blank">Preview Page</a>
             </div>
         </div>
         <form id="editForm" action="{{ route('pages.update-contact-us', $page->id) }}" method="post" enctype="multipart/form-data">
@@ -62,7 +62,7 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
 
-                        <small id="page_slug"><a target="_blank" href="/{{$page->slug}}">{{env('APP_URL')}}/{{$page->slug}}</a></small>
+                        <small id="page_slug"><a target="_blank" href="{{ $page->get_url() }}">{{ $page->get_url() }}</a></small>
                         @error('slug')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
@@ -385,10 +385,10 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-lg-12">
+                <div class="col-lg-12 d-none">
                     <div class="form-group">
                         <label class="d-block">Email Content *</label>
-                        <textarea name="content2" id="editor2" rows="10" cols="80" required>{{ old('content2', $settings->contact_us_email_layout) }}</textarea>
+                        <textarea name="content2" id="editor2" rows="10" cols="80">{{ old('content2', $settings->contact_us_email_layout) }}</textarea>
                     </div>
                     @error('content2')
                         <span class="text-danger">{{ $message }}</span>
@@ -586,17 +586,7 @@
           allowedContent: true,
         };
 
-        let editor2 = CKEDITOR.replace('content2', CKEditorOptions);
-        editor2.on('required', function (evt) {
-            if ($('.invalid-feedback').length == 1) {
-                $('#contentRequired').show();
-            }
-            $('#cke_editor1').addClass('is-invalid');
-            evt.cancel();
-        });
-        // Replace the <textarea id="editor1"> with a CKEditor
-        // instance, using default configuration.
-        
+        // Email content editor hidden in admin UI; value is preserved via hidden textarea.
 
         function has_none_option(objectId, currentValue)
         {
@@ -701,7 +691,7 @@
 
                 .done(function (response) {
 
-                    slug_url = '{{env('APP_URL')}}/' + response;
+                    slug_url = '{{ rtrim(Setting::frontend_url(), '/') }}/' + response;
                     $('#page_slug').html("<a target='_blank' href='" + slug_url + "'>" + slug_url + "</a>");
 
                 });
@@ -712,7 +702,7 @@
         });
 
         $('#name').change(function(){
-            get_page_slug();ema
+            get_page_slug();
         });
 
 

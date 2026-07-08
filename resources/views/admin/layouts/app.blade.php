@@ -142,7 +142,8 @@
     <script>
         var app_url = window.CMS_PUBLIC_URL || "{{ rtrim(url('/'), '/') }}";
         var app__url_prefix = app_url;
-        window.CMS_FOOTER_BG_URL = @json(rtrim(env('FRONTEND_URL', url('/')), '/') . '/images/highlights/roofing1.jpg');
+        window.CMS_FRONTEND_URL = @json(Setting::frontend_url());
+        window.CMS_FOOTER_BG_URL = @json(Setting::footer_background_url());
     </script>
     
     <script src="{{ asset('lib/jquery/jquery.min.js') }}"></script>

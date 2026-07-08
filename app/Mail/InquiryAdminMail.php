@@ -40,6 +40,6 @@ class InquiryAdminMail extends Mailable
     {
         return $this->view('mail.inquiry-admin')
             ->text('mail.inquiry-admin_plain')
-            ->subject('Receive an Inquiry');
+            ->subject('Received an Inquiry');
     }
 }

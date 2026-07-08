@@ -15,13 +15,26 @@ class CheckAccessRights
      */
     public function handle($request, Closure $next, $routeId)
     {
-        if (auth()->user()->is_an_admin()) {
+        $user = auth()->user();
+
+        if (! $user) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            return response()->view('components.unauthorize-access');
+        }
+
+        if ($user->is_an_admin()) {
             return $next($request);
         }
 
-        if (auth()->user()->assign_role->has_permission_to_route($routeId))
-        {
+        if ($user->assign_role->has_permission_to_route($routeId)) {
             return $next($request);
+        }
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
         return response()->view('components.unauthorize-access');

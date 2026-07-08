@@ -651,7 +651,7 @@
 
                 .done(function (response) {
 
-                    slug_url = '{{env('APP_URL')}}/' + response;
+                    slug_url = '{{ rtrim(Setting::frontend_url(), '/') }}/' + response;
                     $('#page_slug').html("<a target='_blank' href='" + slug_url + "'>" + slug_url + "</a>");
 
                 });

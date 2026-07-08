@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Setting;
 use App\Http\Controllers\Controller;
-//use App\Mail\ContactMessageMail;
+use App\Mail\InquiryAdminMail;
+use App\Mail\InquiryMail;
 use App\Models\Article;
 use App\Models\ArticleCategory;
+use App\Models\EmailRecipient;
 use App\Models\Menu;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class PublicPageController extends Controller
 {
@@ -114,7 +116,10 @@ class PublicPageController extends Controller
             $target = $item['target'] ?? '';
             if (empty($target) && !empty($item['page_id']) && $pages) {
                 $page = $pages->get($item['page_id']);
-                $target = $page ? '/public/' . $page->slug : '#';
+                $target = $page ? '/' . ltrim($page->slug, '/') : '#';
+                if ($page && $page->slug === 'home') {
+                    $target = '/';
+                }
             }
 
             return [
@@ -155,7 +160,7 @@ class PublicPageController extends Controller
     {
         $query = Article::query()
             ->with(['category:id,name,slug', 'user:id,firstname,lastname'])
-            ->where('status', 'published')
+            ->whereRaw('LOWER(status) = ?', ['published'])
             ->orderBy('date', 'desc');
 
         // 🔍 Search
@@ -195,10 +200,13 @@ class PublicPageController extends Controller
     {
         $article = Article::with(['category:id,name,slug', 'user:id,firstname,lastname'])
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->whereRaw('LOWER(status) IN (?, ?)', ['published', 'private'])
             ->firstOrFail();
 
-        return response()->json($article);
+        $payload = $article->toArray();
+        $payload['is_preview'] = strtolower((string) $article->status) === 'private';
+
+        return response()->json($payload);
     }
 
     public function public_article_categories()
@@ -207,7 +215,7 @@ class PublicPageController extends Controller
             ->select('id', 'name', 'slug')
             ->withCount([
                 'articles as articles_count' => function ($q) {
-                    $q->where('status', 'published');
+                    $q->whereRaw('LOWER(status) = ?', ['published']);
                 }
             ])
             ->orderBy('name')
@@ -218,7 +226,7 @@ class PublicPageController extends Controller
 
     public function archive()
     {
-        $rows = Article::where('status', 'published')
+        $rows = Article::whereRaw('LOWER(status) = ?', ['published'])
             ->selectRaw('YEAR(date) as year, MONTH(date) as month, COUNT(*) as total')
             ->groupBy('year', 'month')
             ->orderBy('year', 'desc')
@@ -237,24 +245,36 @@ class PublicPageController extends Controller
 
         return response()->json($archive);
     }
-    /*
     public function send(Request $request)
     {
         $data = $request->validate([
-            'inquiry_type'   => 'required|string',
+            'inquiry_type'   => 'required|string|max:100',
             'first_name'     => 'required|string|max:100',
             'last_name'      => 'required|string|max:100',
-            'email'          => 'required|email',
+            'email'          => 'required|email|max:255',
             'contact_number' => 'required|string|max:30',
             'message'        => 'required|string|max:2000',
         ]);
 
-        Mail::to(config('mail.from.address'))
-            ->send(new ContactMessageMail($data));
+        $client = [
+            'subject' => $data['inquiry_type'],
+            'name'    => trim($data['first_name'] . ' ' . $data['last_name']),
+            'email'   => $data['email'],
+            'contact' => $data['contact_number'],
+            'message' => $data['message'],
+        ];
+
+        $setting = Setting::info();
+        $emailRecipients = EmailRecipient::all();
+
+        Mail::to($client['email'])->send(new InquiryMail($setting, $client));
+
+        foreach ($emailRecipients as $emailRecipient) {
+            Mail::to($emailRecipient->email)->send(new InquiryAdminMail($setting, $client, $emailRecipient));
+        }
 
         return response()->json([
-            'message' => 'Message sent successfully'
+            'message' => 'Message sent successfully',
         ]);
     }
-    */
 }

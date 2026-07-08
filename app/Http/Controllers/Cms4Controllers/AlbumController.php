@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Cms4Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 use Facades\App\Helpers\ListingHelper;
+use Facades\App\Helpers\FileHelper;
 use App\Http\Controllers\Controller;
 
 use App\Models\Permission;
@@ -69,11 +71,15 @@ class AlbumController extends Controller
 
         $requestData['user_id'] = auth()->id();
 
-        $album = Album::create($requestData);
-
         $banners = $this->set_order(request('banners'));
 
-        $banners = $this->move_banner_to_official_folder($banners);
+        try {
+            $banners = $this->move_banner_to_official_folder($banners);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
+        $album = Album::create($requestData);
 
         $this->delete_temporary_banner_folder();
 
@@ -143,13 +149,17 @@ class AlbumController extends Controller
             $removeBanners = request('remove_banners');
         }
 
+        try {
+            $newBanners = $this->move_banner_to_official_folder($newBanners);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
         $album->update($updateData);
 
         $this->update_banners($this->get_album_banners($banners));
 
         $this->remove_banners_from_album($removeBanners);
-
-        $newBanners = $this->move_banner_to_official_folder($newBanners);
 
         $album->addBanners($newBanners);
 
@@ -189,7 +199,7 @@ class AlbumController extends Controller
     {
         Banner::find($banners ?? [])->each(function ($banner, $key) {
             $imagePath = $this->get_banner_path_in_storage($banner->image_path);
-            Storage::disk('public')->delete($imagePath);
+            FileHelper::delete_banner_file($imagePath);
             $banner->update(['user_id' => auth()->id()]);
             $banner->delete();
 
@@ -255,8 +265,18 @@ class AlbumController extends Controller
     public function upload(Request $request)
     {
         if ($request->hasFile('banner')) {
+            try {
+                $newFile = $this->upload_file_to_banners_storage($request->file('banner'));
+            } catch (\Throwable $e) {
+                report($e);
 
-            $newFile = $this->upload_file_to_temporary_storage($request->file('banner'));
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Banner image could not be saved. Please check that public/storage/banners is writable.',
+                    'image_url' => '',
+                    'image_name' => '',
+                ], 500);
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -275,33 +295,47 @@ class AlbumController extends Controller
 
     public function make_unique_file_name($folder, $fileName)
     {
-        $fileNames = explode(".", $fileName);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $baseName = pathinfo($fileName, PATHINFO_FILENAME);
         $count = 2;
-        $newFilename = $fileNames[0].' ('.$count.').'.$fileNames[1];
-        while(Storage::disk('public')->exists($folder.'/'.$newFilename)) {
+        $newFilename = $baseName.'-'.$count.($extension ? '.'.$extension : '');
+
+        while (Storage::disk('public')->exists(rtrim($folder, '/').'/'.$newFilename)) {
             $count += 1;
-            $newFilename = $fileNames[0].' ('.$count.').'.$fileNames[1];
+            $newFilename = $baseName.'-'.$count.($extension ? '.'.$extension : '');
         }
 
         return $newFilename;
     }
 
-    public function upload_file_to_temporary_storage($file)
+    public function sanitize_file_name($fileName)
     {
-        $temporaryFolder = 'temporary_banners'.auth()->id();
-        $fileName = $file->getClientOriginalName();
-        if (Storage::disk('public')->exists($temporaryFolder.'/'.$fileName)) {
-            $fileName = $this->make_unique_file_name($temporaryFolder, $fileName);
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $baseName = pathinfo($fileName, PATHINFO_FILENAME);
+        $baseName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $baseName);
+        $baseName = trim($baseName, '-');
+
+        if ($baseName === '') {
+            $baseName = 'banner';
         }
 
-        $path = Storage::disk('public')->putFileAs($temporaryFolder, $file, $fileName);
-        $url = Storage::disk('public')->url($path);
+        return $extension !== '' ? $baseName.'.'.$extension : $baseName;
+    }
+
+    public function upload_file_to_banners_storage($file)
+    {
+        $savedFile = FileHelper::save_banner_file($file);
 
         return [
-            'path' => $temporaryFolder.'/'.$fileName,
-            'name' => $fileName,
-            'url' => $url
+            'path' => $savedFile['path'],
+            'name' => $savedFile['name'],
+            'url' => $this->normalize_storage_url($savedFile['url']),
         ];
+    }
+
+    public function upload_file_to_temporary_storage($file)
+    {
+        return $this->upload_file_to_banners_storage($file);
     }
 
 
@@ -335,43 +369,128 @@ class AlbumController extends Controller
     public function move_banner_to_official_folder($banners)
     {
         foreach ($banners as $key => $banner) {
-            $temporaryPath = $this->get_banner_path_in_storage($banners[$key]['image_path']);
-            $fileName = $this->get_banner_file_name($banners[$key]['image_path']);
-            $bannerFolder = '';
+            $imagePath = $banners[$key]['image_path'];
+            $storagePath = $this->get_banner_path_in_storage($imagePath);
 
-            $banners[$key]['image_path'] = $this->move_to_banners_folder($temporaryPath, $bannerFolder.$fileName);
+            if ($this->is_permanent_banner_path($storagePath)) {
+                if (!FileHelper::banner_file_exists($storagePath)) {
+                    $this->failBannerImageValidation();
+                }
+
+                $banners[$key]['image_path'] = $this->normalize_storage_url(url('storage/'.$storagePath));
+                continue;
+            }
+
+            $fileName = $this->get_banner_file_name($imagePath) ?: basename($storagePath);
+            $banners[$key]['image_path'] = $this->move_to_banners_folder($storagePath, $fileName);
         }
 
         return $banners;
     }
 
+    public function is_permanent_banner_path($storagePath)
+    {
+        return str_starts_with($storagePath, 'banners/') && !str_contains($storagePath, 'temporary_banners');
+    }
+
     public function move_to_banners_folder($temporaryPath, $fileName)
     {
         $folder = 'banners/';
-        if (Storage::disk('public')->exists($folder.$fileName)) {
-            $fileName = $this->make_unique_file_name($folder, $fileName);
+        $fileName = ltrim($fileName, '/');
+        $newPath = $folder.$fileName;
+
+        if ($this->is_permanent_banner_path($temporaryPath) && FileHelper::banner_file_exists($temporaryPath)) {
+            return $this->normalize_storage_url(url('storage/'.$temporaryPath));
         }
 
-        $newPath = $folder.$fileName;
-        Storage::disk('public')->move($temporaryPath, $newPath);
-        return Storage::disk('public')->url($newPath);
+        if (FileHelper::banner_file_exists($newPath)) {
+            return $this->normalize_storage_url(url('storage/'.$newPath));
+        }
+
+        if (FileHelper::banner_file_exists($folder.$fileName)) {
+            $fileName = $this->make_unique_file_name($folder, $fileName);
+            $newPath = $folder.$fileName;
+        }
+
+        if (!FileHelper::banner_file_exists($temporaryPath) && !Storage::disk('public')->exists($temporaryPath)) {
+            $this->failBannerImageValidation();
+        }
+
+        if (FileHelper::banner_file_exists($temporaryPath)) {
+            $source = public_path('storage/'.$temporaryPath);
+            $destination = public_path('storage/'.$newPath);
+            $destinationDir = dirname($destination);
+
+            if (!is_dir($destinationDir)) {
+                mkdir($destinationDir, 0755, true);
+            }
+
+            if (!rename($source, $destination)) {
+                $this->failBannerImageValidation('Banner image could not be saved. Please upload the image again.');
+            }
+        } elseif (!Storage::disk('public')->move($temporaryPath, $newPath)) {
+            $this->failBannerImageValidation('Banner image could not be saved. Please upload the image again.');
+        }
+
+        if (!FileHelper::banner_file_exists($newPath)) {
+            $this->failBannerImageValidation('Banner image could not be saved. Please upload the image again.');
+        }
+
+        return $this->normalize_storage_url(url('storage/'.$newPath));
     }
 
     public function get_banner_path_in_storage($path)
     {
-        $paths = explode('storage/', $path);
+        $path = rawurldecode($path);
+        $path = str_replace('\\', '/', $path);
 
-        if (count($paths) == 1) {
-            return '';
+        if (str_contains($path, 'storage/')) {
+            $paths = explode('storage/', $path);
+
+            return preg_replace('#/+#', '/', end($paths));
         }
 
-        return explode('storage/', $path)[1];
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'banners/')) {
+            return preg_replace('#/+#', '/', $path);
+        }
+
+        return '';
+    }
+
+    protected function failBannerImageValidation(string $message = 'Banner image file could not be found. Please remove the broken image and upload again.')
+    {
+        throw ValidationException::withMessages([
+            'banners' => [$message],
+        ]);
     }
 
     public function get_banner_file_name($path)
     {
+        $path = rawurldecode($path);
         $temporaryFolder = 'temporary_banners'.auth()->id();
-        return explode($temporaryFolder, $path)[1];
+
+        if (str_contains($path, $temporaryFolder)) {
+            return ltrim(explode($temporaryFolder, $path)[1] ?? '', '/');
+        }
+
+        return basename(parse_url($path, PHP_URL_PATH) ?? '');
+    }
+
+    public function normalize_storage_url($url)
+    {
+        $url = preg_replace('#(?<!:)/{2,}#', '/', $url);
+
+        if (!preg_match('#^(https?://[^/]+)(/.*)$#i', $url, $matches)) {
+            return $url;
+        }
+
+        $segments = explode('/', trim($matches[2], '/'));
+        $encodedPath = '/'.implode('/', array_map(function ($segment) {
+            return rawurlencode(rawurldecode($segment));
+        }, $segments));
+
+        return $matches[1].$encodedPath;
     }
 
     public function delete_temporary_banner_folder()
